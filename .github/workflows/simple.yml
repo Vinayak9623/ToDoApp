@@ -21,3 +21,15 @@ jobs:
               run: |
                 echo "docker user name is ${{vars.DOCKERHUB_USERNAME}}"
                 echo "ec2 User name is ${{vars.EC2_USERNAME}}"
+
+            - name: step4 git checkout   
+              uses: actions/checkout@v6
+
+            - name: step5 setup java
+              uses: actions/setup-java@v5
+              with:
+                  java-version: '21'
+                  distribution: 'temurin'
+
+            - name: ste6 printing  java version
+              run: java -version
