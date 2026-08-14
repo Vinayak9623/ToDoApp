@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - ToDoApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --danger-light: #fef2f2;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.75rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+            font-size: 1.4rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .brand-info h1 {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+        }
+
+        .brand-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            background: var(--success-light);
+            color: var(--success);
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.15rem 1.4rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 0.15rem;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+        .stat-icon.green { background: var(--success-light); color: var(--success); }
+        .stat-icon.amber { background: var(--warning-light); color: var(--warning); }
+
+        /* Main Card */
+        .main-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        /* Controls */
+        .controls-bar {
+            padding: 1.15rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            background: #ffffff;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+            max-width: 420px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.65rem 1rem 0.65rem 2.3rem;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-main);
+            color: var(--text-main);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        .btn-icon {
+            padding: 0.4rem 0.65rem;
+            font-size: 0.82rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .btn-edit {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid #c7d2fe;
+        }
+
+        .btn-edit:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-delete {
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        /* Table */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .user-table th {
+            padding: 0.85rem 1.5rem;
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .user-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .user-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .user-meta .user-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .user-meta .user-id {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.2rem 0.65rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .role-badge.developer { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+        .role-badge.devops { background: #fef3c7; color: #b45309; border-color: #fde68a; }
+        .role-badge.manager { background: #f3e8ff; color: #7e22ce; border-color: #e9d5ff; }
+        .role-badge.qa { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 460px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border);
+            transform: scale(0.95) translateY(10px);
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .modal-backdrop.active .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.2rem;
+        }
+
+        .btn-close:hover { color: var(--text-main); }
+
+        .modal-body { padding: 1.4rem; }
+
+        .form-group { margin-bottom: 1.1rem; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.6rem 0.85rem;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            outline: none;
+            background: var(--bg-main);
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        .modal-footer {
+            padding: 0.9rem 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            z-index: 1000;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.75rem 1.15rem;
+            border-radius: var(--radius-md);
+            background: #1e293b;
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 260px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.danger { border-left-color: var(--danger); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem 0.5rem; }
+            .app-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+            .controls-bar { flex-direction: column; align-items: stretch; }
+            .search-wrapper { max-width: 100%; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="brand-wrapper">
+            <div class="brand-logo">👥</div>
+            <div class="brand-info">
+                <h1>User Management Portal</h1>
+                <p>In-Memory CRUD Web Application</p>
+            </div>
+        </div>
+        <div class="header-badge">
+            <span class="status-dot"></span>
+            <span>Live In-Memory</span>
+        </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value" id="totalUsersCount">0</div>
+            </div>
+            <div class="stat-icon blue">👥</div>
+        </div>
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Developers</div>
+                <div class="stat-value" id="devCount">0</div>
+            </div>
+            <div class="stat-icon green">💻</div>
+        </div>
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">DevOps Engineers</div>
+                <div class="stat-value" id="devopsCount">0</div>
+            </div>
+            <div class="stat-icon amber">🚀</div>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <main class="main-card">
+        <div class="controls-bar">
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, email, or role..." autocomplete="off">
+            </div>
+            <button class="btn btn-primary" onclick="openAddModal()">
+                <span>➕</span> Add New User
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email Address</th>
+                        <th>Role / Department</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- Loaded dynamically via JavaScript -->
+                </tbody>
+            </table>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📂</div>
+                <h3>No Users Found</h3>
+                <p>Click "Add New User" to create one or clear your search filter.</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal: Add / Edit User -->
+<div id="userModal" class="modal-backdrop">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add New User</h2>
+            <button class="btn-close" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="userForm">
+            <div class="modal-body">
+                <input type="hidden" id="userId">
+                <div class="form-group">
+                    <label for="userName">Full Name *</label>
+                    <input type="text" id="userName" class="form-control" placeholder="e.g. Jane Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email Address *</label>
+                    <input type="email" id="userEmail" class="form-control" placeholder="e.g. jane@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Role / Title</label>
+                    <input type="text" id="userRole" class="form-control" placeholder="e.g. Developer, DevOps Engineer, QA">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="saveUserBtn">Save User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Delete Confirmation -->
+<div id="deleteModal" class="modal-backdrop">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Confirm Deletion</h2>
+            <button class="btn-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <strong id="deleteUserName">this user</strong>?</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.4rem;">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- All-in-One Plain JavaScript Logic -->
+<script>
+    let users = [];
+    let deleteTargetId = null;
+
+    const userTableBody = document.getElementById('userTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const emptyState = document.getElementById('emptyState');
+    const totalUsersCount = document.getElementById('totalUsersCount');
+    const devCount = document.getElementById('devCount');
+    const devopsCount = document.getElementById('devopsCount');
+
+    const userModal = document.getElementById('userModal');
+    const userForm = document.getElementById('userForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const userIdInput = document.getElementById('userId');
+    const userNameInput = document.getElementById('userName');
+    const userEmailInput = document.getElementById('userEmail');
+    const userRoleInput = document.getElementById('userRole');
+
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteUserNameSpan = document.getElementById('deleteUserName');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchUsers();
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            filterUsers(query);
+        });
+
+        userForm.addEventListener('submit', handleFormSubmit);
+        confirmDeleteBtn.addEventListener('click', handleDelete);
+
+        window.addEventListener('click', (e) => {
+            if (e.target === userModal) closeModal();
+            if (e.target === deleteModal) closeDeleteModal();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeDeleteModal();
+            }
+        });
+    }
+
+    // 1. READ: Fetch users from /api/users
+    async function fetchUsers() {
+        try {
+            const response = await fetch('/api/users');
+            if (!response.ok) throw new Error('Failed to load users from backend');
+            users = await response.json();
+            renderUsers(users);
+            updateStats();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    }
+
+    function renderUsers(list) {
+        userTableBody.innerHTML = '';
+        if (!list || list.length === 0) {
+            emptyState.style.display = 'block';
+            return;
+        }
+        emptyState.style.display = 'none';
+
+        list.forEach(user => {
+            const tr = document.createElement('tr');
+            const initials = getInitials(user.name);
+            const roleClass = getRoleClass(user.role);
+
+            tr.innerHTML = `
+                <td>
+                    <div class="user-cell">
+                        <div class="user-avatar">${initials}</div>
+                        <div class="user-meta">
+                            <div class="user-name">${escapeHtml(user.name)}</div>
+                            <div class="user-id">ID: #${user.id}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${escapeHtml(user.email)}</td>
+                <td>
+                    <span class="role-badge ${roleClass}">${escapeHtml(user.role || 'Member')}</span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-icon btn-edit" onclick="openEditModal(${user.id})" title="Edit User">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn btn-icon btn-delete" onclick="openDeleteModal(${user.id}, '${escapeHtml(user.name)}')" title="Delete User">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </td>
+            `;
+            userTableBody.appendChild(tr);
+        });
+    }
+
+    function updateStats() {
+        totalUsersCount.textContent = users.length;
+        const devs = users.filter(u => (u.role || '').toLowerCase().includes('dev') && !(u.role || '').toLowerCase().includes('devops')).length;
+        const devops = users.filter(u => (u.role || '').toLowerCase().includes('devops')).length;
+        devCount.textContent = devs;
+        devopsCount.textContent = devops;
+    }
+
+    function filterUsers(query) {
+        if (!query) {
+            renderUsers(users);
+            return;
+        }
+        const filtered = users.filter(u =>
+            (u.name && u.name.toLowerCase().includes(query)) ||
+            (u.email && u.email.toLowerCase().includes(query)) ||
+            (u.role && u.role.toLowerCase().includes(query))
+        );
+        renderUsers(filtered);
+    }
+
+    // 2. CREATE / UPDATE: Submit Handler
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        const id = userIdInput.value;
+        const data = {
+            name: userNameInput.value.trim(),
+            email: userEmailInput.value.trim(),
+            role: userRoleInput.value.trim()
+        };
+
+        try {
+            if (id) {
+                const response = await fetch(`/api/users/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error('Failed to update user');
+                const updated = await response.json();
+                showToast(`User "${updated.name}" updated successfully!`, 'success');
+            } else {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error('Failed to create user');
+                const created = await response.json();
+                showToast(`User "${created.name}" created successfully!`, 'success');
+            }
+            closeModal();
+            fetchUsers();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    }
+
+    // 3. DELETE Handler
+    async function handleDelete() {
+        if (!deleteTargetId) return;
+        try {
+            const response = await fetch(`/api/users/${deleteTargetId}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Failed to delete user');
+            showToast('User deleted successfully!', 'success');
+            closeDeleteModal();
+            fetchUsers();
+        } catch (err) {
+            showToast(err.message, 'danger');
+        }
+    }
+
+    function openAddModal() {
+        modalTitle.textContent = 'Add New User';
+        userForm.reset();
+        userIdInput.value = '';
+        userModal.classList.add('active');
+        userNameInput.focus();
+    }
+
+    function openEditModal(id) {
+        const u = users.find(x => x.id === id);
+        if (!u) return;
+        modalTitle.textContent = 'Edit User';
+        userIdInput.value = u.id;
+        userNameInput.value = u.name;
+        userEmailInput.value = u.email;
+        userRoleInput.value = u.role || '';
+        userModal.classList.add('active');
+        userNameInput.focus();
+    }
+
+    function closeModal() {
+        userModal.classList.remove('active');
+    }
+
+    function openDeleteModal(id, name) {
+        deleteTargetId = id;
+        deleteUserNameSpan.textContent = name;
+        deleteModal.classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        deleteModal.classList.remove('active');
+        deleteTargetId = null;
+    }
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span><span>${escapeHtml(message)}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    function getInitials(name) {
+        if (!name) return 'U';
+        return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    }
+
+    function getRoleClass(role) {
+        if (!role) return '';
+        const r = role.toLowerCase();
+        if (r.includes('devops')) return 'devops';
+        if (r.includes('dev')) return 'developer';
+        if (r.includes('manager') || r.includes('lead')) return 'manager';
+        if (r.includes('qa') || r.includes('test')) return 'qa';
+        return '';
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+</script>
+
+</body>
+</html>
