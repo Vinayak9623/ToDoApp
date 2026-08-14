@@ -21,6 +21,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/test")
+    public String test(){
+        return "test";
+    }
+
     // 1. READ ALL - GET /api/users
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
