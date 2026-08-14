@@ -28,7 +28,7 @@ jobs:
           
       - name: Build Application with Maven 
         run: |
-            chmod +x mvnw
+            chmod +x ./mvnw
             ./mvnw clean package -DskipTests
 
       - name: Log in to DockerHub
