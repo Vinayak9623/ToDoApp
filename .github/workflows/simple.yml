@@ -1,0 +1,11 @@
+name: Simple concept work flow
+
+on:
+    workflow_dispatch:
+
+jobs:
+    learn:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Hello world
+              run: echo "Hello world!"
