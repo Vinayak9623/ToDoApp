@@ -8,6 +8,8 @@ on:
 
 env:
   APP_NAME: todo-backend
+  IMAGE_TAG: latest
+  CONTAINER_NAME: todo-backend-container
 
 jobs: 
   build:
@@ -42,11 +44,26 @@ jobs:
    
       - name: Build Docker image
         run: |
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest .
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} .
           echo "Successfully built docker image"
           docker images
 
       - name: Push Docker image to DockerHub
         run: |
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
           echo "Successfully pushed docker image to DockerHub"
+
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ vars.EC2_HOST }}
+          username: ${{ vars.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PASSWORD }}
+          script: |
+            docker pull ${{ vars.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm ${{ env.CONTAINER_NAME }} || true
+            docker run -d --name ${{ env.CONTAINER_NAME }} -p 8080:8080 ${{ vars.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
+            docker image prune -f
+            echo "Successfully deployed the application on EC2"
